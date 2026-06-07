@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alliance CCTV — Quotation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background: #f5f5f5; padding-top: 10px; }
+        
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 16px; }
+        
+        .header { background: linear-gradient(135deg, #E8730C 0%, #12459E 100%); color: white; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
+        .header h1 { font-size: 18px; margin-bottom: 4px; }
+        .header p { font-size: 12px; opacity: 0.9; }
+        
+        .section { margin-bottom: 18px; }
+        .section-title { font-weight: bold; color: #12459E; margin-bottom: 8px; font-size: 13px; text-transform: uppercase; }
+        
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; margin-bottom: 8px; font-family: Arial, sans-serif; }
+        input:focus, select:focus { outline: none; border-color: #E8730C; box-shadow: 0 0 4px rgba(232,115,12,0.3); }
+        
+        .filter-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+        
+        .items-list { background: #f9f9f9; padding: 12px; border-radius: 4px; max-height: 320px; overflow-y: auto; border: 1px solid #e0e0e0; }
+        .item-row { display: grid; grid-template-columns: 1fr 70px 70px; gap: 8px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee; align-items: center; }
+        .item-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .item-name { font-size: 12px; font-weight: 500; word-break: break-word; line-height: 1.3; }
+        .item-price { font-size: 11px; color: #666; margin-top: 2px; }
+        input[type="number"] { padding: 6px; font-size: 12px; width: 100%; }
+        .btn-add { padding: 6px; font-size: 11px; background: #12459E; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        .btn-add:active { background: #0a2f5f; }
+        
+        .quote-section { background: #fafafa; padding: 12px; border-radius: 4px; border-left: 4px solid #E8730C; }
+        .quote-item { display: grid; grid-template-columns: 1fr 50px 80px 50px; gap: 8px; margin-bottom: 8px; font-size: 12px; align-items: center; }
+        .quote-item:last-child { margin-bottom: 0; }
+        .item-del { padding: 3px 6px; font-size: 10px; background: #fee; color: #c33; border: none; border-radius: 2px; cursor: pointer; }
+        
+        .totals { background: white; padding: 12px; border-radius: 4px; border: 1px solid #e0e0e0; }
+        .total-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; margin-bottom: 8px; font-size: 13px; }
+        .total-row:last-child { margin-bottom: 0; }
+        .total-label { font-weight: 500; }
+        .total-value { text-align: right; font-weight: bold; }
+        .grand-total { font-size: 15px; color: #E8730C; padding-top: 8px; border-top: 2px solid #E8730C; }
+        
+        button.main { width: 100%; padding: 12px; font-size: 14px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; margin-bottom: 8px; }
+        .btn-copy { background: #E8730C; color: white; }
+        .btn-copy:active { background: #c95b00; }
+        .btn-clear { background: #ddd; color: #666; }
+        .btn-clear:active { background: #bbb; }
+        
+        .message-box { background: #f0f0f0; padding: 12px; border-radius: 4px; font-size: 12px; font-family: 'Courier New', monospace; white-space: pre-wrap; word-break: break-all; line-height: 1.5; max-height: 240px; overflow-y: auto; color: #333; border: 1px solid #ddd; }
+        
+        .empty { text-align: center; color: #999; font-size: 12px; padding: 16px 0; }
+        .error { background: #fee; color: #c33; padding: 10px; border-radius: 4px; margin-bottom: 10px; font-size: 12px; }
+        
+        @media (max-width: 480px) {
+            .container { padding: 12px; }
+            .header { padding: 16px; }
+            .header h1 { font-size: 16px; }
+            .filter-row { grid-template-columns: 1fr; }
+            .item-row { grid-template-columns: 1fr 60px 60px; }
+            .quote-item { grid-template-columns: 1fr 40px 60px 40px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Alliance CCTV</h1>
+        <p>Quotation Builder</p>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">📋 Customer</div>
+        <input type="text" id="custName" placeholder="Customer Name" />
+        <input type="text" id="custSite" placeholder="Site / Address" />
+        <div class="filter-row">
+            <input type="text" id="custDate" placeholder="Date" />
+            <input type="text" id="custSales" placeholder="Your Name" />
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">🎯 Add Products</div>
+        
+        <div class="filter-row">
+            <div>
+                <label style="font-size: 11px; color: #666; display: block; margin-bottom: 4px;">Product Type</label>
+                <select id="typeFilter" onchange="updateBrandFilter()">
+                    <option value="">— Select Type —</option>
+                    <option value="Camera">Camera</option>
+                    <option value="DVR">DVR / NVR</option>
+                    <option value="Power Supply">Power Supply</option>
+                    <option value="Cable">Cable</option>
+                    <option value="HDD">Hard Disk (HDD)</option>
+                    <option value="Monitor">Monitor</option>
+                    <option value="Installation">Installation</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size: 11px; color: #666; display: block; margin-bottom: 4px;">Brand / Series</label>
+                <select id="brandFilter" onchange="updateProducts()">
+                    <option value="">— All Brands —</option>
+                </select>
+            </div>
+        </div>
+        
+        <div id="productList" class="items-list">
+            <div class="empty">Select a product type above</div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">📦 Quote Items</div>
+        <div id="quoteBox" class="quote-section">
+            <div class="empty">No items yet — add above</div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="totals">
+            <div class="total-row">
+                <div class="total-label">Sub-Total</div>
+                <div class="total-value" id="subTotal">Rs 0</div>
+            </div>
+            <div class="total-row">
+                <div class="total-label">GST 18%</div>
+                <div class="total-value" id="gstAmount">Rs 0</div>
+            </div>
+            <div class="total-row grand-total">
+                <div class="total-label">GRAND TOTAL</div>
+                <div class="total-value" id="grandTotal">Rs 0</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">💬 WhatsApp Message</div>
+        <div id="messageBox" class="message-box">Build a quote to see the message...</div>
+        <button class="main btn-copy" onclick="copyMessage()">📋 Copy for WhatsApp</button>
+        <button class="main btn-clear" onclick="clearQuote()">🗑️ Clear All</button>
+    </div>
+    
+    <div style="font-size: 10px; color: #999; text-align: center; margin-top: 20px;">
+        <p>✓ Prices updated automatically</p>
+        <p>✓ Works on any phone browser</p>
+    </div>
+</div>
+
+<script>
+    let allProducts = [];
+    let quoteItems = [];
+    const GST_RATE = 0.18;
+    
+    // Embedded product data (all 86 products)
+    const productsData = [
+        // Analog - Cameras
+        {"type":"Camera","brand":"Analog","product":"2.4MP Dome Eco","model":"CP-URC-DC24PL3-0360","cost":653,"sell":862.5},
+        {"type":"Camera","brand":"Analog","product":"2.4MP Bullet Eco","model":"CP-URC-TC24PL3-0360","cost":720,"sell":950},
+        {"type":"Camera","brand":"Analog","product":"2.4MP Dome Built-in mic","model":"CP-URC-DC24PL3C-0360","cost":756.5,"sell":1062.5},
+        {"type":"Camera","brand":"Analog","product":"2.4MP Bullet Built-in mic","model":"CP-URC-TC24PL3C-0360","cost":823.25,"sell":1156.25},
+        {"type":"Camera","brand":"Analog","product":"2.4MP Dome Colour Built-in mic","model":"CP-URC-DC24PL3C-L-0360","cost":1001.25,"sell":1406.25},
+        {"type":"Camera","brand":"Analog","product":"2.4MP Bullet Colour Built-in mic","model":"CP-URC-TC24PL3C-L-0360","cost":1050.2,"sell":1475},
+        {"type":"Camera","brand":"Analog","product":"2.4MP Dome 2-way Audio Dual Light","model":"CP-UMC-DA24L4-L","cost":1432.9,"sell":2012.5},
+        {"type":"Camera","brand":"Analog","product":"2.4MP Bullet 2-way Audio Dual Light","model":"CP-UMC-TA24L3-L","cost":1432.9,"sell":2012.5},
+        // Analog - DVR
+        {"type":"DVR","brand":"Analog","product":"4Ch. DVR 720P","model":"CP-UVR-0401E1-IC","cost":2275,"sell":3125},
+        {"type":"DVR","brand":"Analog","product":"8Ch. DVR 720P","model":"CP-UVR-0801E1-IC","cost":3254,"sell":4625},
+        {"type":"DVR","brand":"Analog","product":"16Ch. DVR 720P","model":"CP-UVR-1601E1-IC2","cost":5745,"sell":8375},
+        {"type":"DVR","brand":"Analog","product":"4 Ch. DVR two-way talk","model":"CP-UVR-0404E1-I","cost":2149.35,"sell":3018.75},
+        {"type":"DVR","brand":"Analog","product":"8 Ch. DVR two-way talk","model":"CP-UVR-0808E1-I","cost":3119.45,"sell":4381.25},
+        {"type":"DVR","brand":"Analog","product":"4Ch. DVR  1080P","model":"CP-UVR-0401F1-HC","cost":3034.9,"sell":4262.5},
+        {"type":"DVR","brand":"Analog","product":"8Ch. DVR  1080P","model":"CP-UVR-0801F1-IC","cost":4365.45,"sell":6131.25},
+        // Analog - Cable
+        {"type":"Cable","brand":"Analog","product":"3+1 coaxial Cable","model":"3+1 Cable","cost":11.57,"sell":16.25},
+        // Analog - Power Supply
+        {"type":"Power Supply","brand":"Analog","product":"4CH POWER SUPPLY; METAL CASING","model":"CP-DPS-MD50P-12D","cost":324.85,"sell":456.25},
+        {"type":"Power Supply","brand":"Analog","product":"8CH POWER SUPPLY; METAL CASING","model":"CP-DPS-MD100P-12D","cost":454.79,"sell":638.75},
+        // Analog - Monitor
+        {"type":"Monitor","brand":"Analog","product":"19inch Monitor","model":"Monitor","cost":1950,"sell":2625},
+        {"type":"Monitor","brand":"Analog","product":"22inch Monitor","model":"Monitor","cost":3900,"sell":5175},
+        {"type":"Monitor","brand":"Analog","product":"24inch Monitor","model":"Monitor","cost":4800,"sell":5664},
+        // Analog - Installation
+        {"type":"Installation","brand":"Analog","product":"Installation Charge","model":"Installation","cost":1,"sell":500},
+        // Analog - HDD
+        {"type":"HDD","brand":"Analog","product":"500GB HDD","model":"500GB HDD","cost":1747.96,"sell":2455},
+        {"type":"HDD","brand":"Analog","product":"2TB Daichi","model":"2TB Daichi","cost":6000,"sell":7500},
+        {"type":"HDD","brand":"Analog","product":"3TB Daichi","model":"3TB Daichi","cost":6250,"sell":7812.5},
+        {"type":"HDD","brand":"Analog","product":"1TB HDD Daichi","model":"1TB HDD Daichi","cost":4300,"sell":4900},
+        {"type":"HDD","brand":"Analog","product":"1TB HDD WD","model":"1TB HDD WD","cost":6853,"sell":7700},
+        
+        // Wi-Fi - Cameras
+        {"type":"Camera","brand":"Wi-Fi","product":"2MP Wi-Fi Camera","model":"2MP","cost":1560,"sell":2350},
+        {"type":"Camera","brand":"Wi-Fi","product":"3MP Wi-Fi Camera","model":"3MP","cost":1690,"sell":2650},
+        {"type":"Camera","brand":"Wi-Fi","product":"4MP Wi-Fi Camera","model":"4MP","cost":2265,"sell":3300},
+        {"type":"Camera","brand":"Wi-Fi","product":"32GB Storage","model":"32GB","cost":590,"sell":999},
+        {"type":"Camera","brand":"Wi-Fi","product":"64GB Storage","model":"64GB","cost":944,"sell":1850},
+        {"type":"Camera","brand":"Wi-Fi","product":"128GB Storage","model":"128GB","cost":1593,"sell":3400},
+        {"type":"Installation","brand":"Wi-Fi","product":"Installation Charge","model":"Installation","cost":0,"sell":500},
+        
+        // IP CB Plus - Cameras
+        {"type":"Camera","brand":"IP — CB Plus","product":"2MP IP Dome, 3.6mm, 30m IR","model":"CP-UNC-DA21L3C-Q-0280","cost":2325,"sell":2864.63},
+        {"type":"Camera","brand":"IP — CB Plus","product":"2MP IP Turret, 3.6mm, 30m IR","model":"CP-UNC-TA21L3C-Q-0360","cost":2390,"sell":2944.72},
+        {"type":"Camera","brand":"IP — CB Plus","product":"2MP IP Dome, 3.6mm, 30m IR, Mic + Light","model":"CP-UNC-DA21L3C-LQ-0360","cost":2571,"sell":3167.73},
+        {"type":"Camera","brand":"IP — CB Plus","product":"2MP IP Turret, 3.6mm, 30m IR, Mic + Light","model":"CP-UNC-TA21L3C-LQ-0360","cost":2620,"sell":3228.1},
+        {"type":"Camera","brand":"IP — CB Plus","product":"2MP IP Dome, 3.6mm, 30m IR, Mic + Light 2way","model":"CP-UNC-DA21L3B-LQ-0360","cost":2740,"sell":3375.95},
+        {"type":"Camera","brand":"IP — CB Plus","product":"2MP IP Turret, 3.6mm, 30m IR, Mic + Light 2way","model":"CP-UNC-TA21L3B-LQ-0360","cost":2810,"sell":3462.2},
+        {"type":"Camera","brand":"IP — CB Plus","product":"2MP IP Turret, 6mm, 60m IR","model":"CP-UNC-TA21L6C-Q-0600","cost":3356,"sell":4134.93},
+        {"type":"Camera","brand":"IP — CB Plus","product":"4MP IP Dome, 3.6mm, 30m IR","model":"CP-UNC-DA41L3C-D-Q-0360","cost":3400,"sell":4189.14},
+        {"type":"Camera","brand":"IP — CB Plus","product":"4MP IP Turret, 3.6mm, 30m IR","model":"CP-UNC-TA41L3C-D-Q-0360","cost":3450,"sell":4250.75},
+        {"type":"Camera","brand":"IP — CB Plus","product":"4MP IP Dome, 3.6mm, 30m IR, Mic + Light","model":"CP-UNC-DA41L3C-D-LQ-0360","cost":3152,"sell":3883.58},
+        {"type":"Camera","brand":"IP — CB Plus","product":"4MP IP Turret, 3.6mm, 30m IR, Mic + Light","model":"CP-UNC-TA41L3C-D-LQ-0360","cost":3210,"sell":3955.04},
+        {"type":"Camera","brand":"IP — CB Plus","product":"4MP IP Dome, 3.6mm, 30m IR, Mic + Light 2way","model":"CP-UNC-DA41L3B-D-LQ-0360","cost":4207,"sell":5183.44},
+        {"type":"Camera","brand":"IP — CB Plus","product":"4MP IP Turret, 3.6mm, 30m IR, Mic + Light 2way","model":"CP-UNC-TA41L3B-D-LQ-0360","cost":4280,"sell":5273.39},
+        {"type":"Camera","brand":"IP — CB Plus","product":"4MP IP Turret, 6mm, 60m IR (Metal)","model":"CP-UNC-TA41L6C-D-Q-0600","cost":4152,"sell":5115.68},
+        {"type":"Camera","brand":"IP — CB Plus","product":"6MP IP Dome, 3.6mm, 30m IR, Mic + Light","model":"CP-UNC-DA61L3C-LQ-0360","cost":4152,"sell":5115.68},
+        {"type":"Camera","brand":"IP — CB Plus","product":"6MP IP Turret, 3.6mm, 30m IR, Mic + Light","model":"CP-UNC-TA61L3C-LQ-0360","cost":4280,"sell":5273.39},
+        {"type":"Camera","brand":"IP — CB Plus","product":"8MP IP Dome, 3.6mm, 30m IR, Mic + Light","model":"CP-UNC-DA81L3C-LQ-0360","cost":6110,"sell":7528.13},
+        {"type":"Camera","brand":"IP — CB Plus","product":"8MP IP Turret, 3.6mm, 30m IR, Mic + Light","model":"CP-UNC-TA81L3C-LQ-0360","cost":6190,"sell":7626.7},
+        // IP CB Plus - DVR
+        {"type":"DVR","brand":"IP — CB Plus","product":"4CH NVR, 8MP Support, 80 Mbps, 1 SATA, 1080P Output","model":"CP-UNR-104F1","cost":3250,"sell":4509.38},
+        {"type":"DVR","brand":"IP — CB Plus","product":"8CH NVR, 8MP Support, 80 Mbps, 1 SATA, 1080P Output","model":"CP-UNR-108F1","cost":4200,"sell":5827.5},
+        {"type":"DVR","brand":"IP — CB Plus","product":"4CH NVR, TRUE 4K Output, 40 Mbps, 1 SATA, Entry AI","model":"CP-UNR-4K2041-V4","cost":4350,"sell":6035.63},
+        {"type":"DVR","brand":"IP — CB Plus","product":"8CH NVR, TRUE 4K Output, 60 Mbps, 1 SATA, Entry AI","model":"CP-UNR-4K2081-V4","cost":4800,"sell":6660},
+        {"type":"DVR","brand":"IP — CB Plus","product":"16CH NVR, TRUE 4K Output, 80 Mbps, 1 SATA, Small Setup","model":"CP-UNR-4K2161-V4","cost":5644,"sell":7831.05},
+        {"type":"DVR","brand":"IP — CB Plus","product":"16CH NVR, TRUE 4K Output, 144 Mbps (72 Mbps AI), 2 SATA","model":"CP-UNR-4K2162-V3","cost":6661,"sell":9242.14},
+        {"type":"DVR","brand":"IP — CB Plus","product":"8CH NVR, TRUE 4K Output, 160 Mbps (80 Mbps AI), 2 SATA","model":"CP-UNR-4K4082-V4","cost":6656,"sell":9235.2},
+        {"type":"DVR","brand":"IP — CB Plus","product":"16CH NVR, TRUE 4K Output, 160 Mbps, 2 SATA, Commercial","model":"CP-UNR-4K4162-V4","cost":8161,"sell":11323.39},
+        {"type":"DVR","brand":"IP — CB Plus","product":"32CH NVR, TRUE 4K Output, 160 Mbps, 2 SATA, AI","model":"CP-UNR-4K4322-V4","cost":10893,"sell":13904.91},
+        {"type":"DVR","brand":"IP — CB Plus","product":"16CH NVR, TRUE 4K Output, 160 Mbps (80 Mbps AI), AI, 4 SATA","model":"CP-UNR-4K4164-FI","cost":17203,"sell":23869.16},
+        
+        // IP Core Fix - Cameras
+        {"type":"Camera","brand":"IP — Core Fix","product":"4MP IP Dome, 3.6mm, 30m IR, Mic + Light","model":"CF_2","cost":1600,"sell":3552},
+        {"type":"Camera","brand":"IP — Core Fix","product":"4MP IP Turret, 3.6mm, 30m IR, Mic + Light","model":"CF_3","cost":1700,"sell":3774},
+        {"type":"Camera","brand":"IP — Core Fix","product":"5MP IP Dome, 3.6mm, 30m IR, Mic + Light","model":"CF_4","cost":1900,"sell":2340.99},
+        {"type":"Camera","brand":"IP — Core Fix","product":"5MP IP Turret, 3.6mm, 30m IR, Mic + Light","model":"CF_5","cost":2000,"sell":2464.2},
+        {"type":"Camera","brand":"IP — Core Fix","product":"5MP IP Dome Siren Light, Mic + Light 2way","model":"CF_6","cost":2570,"sell":3166.5},
+        {"type":"Camera","brand":"IP — Core Fix","product":"5MP IP Bullet Siren Light, Mic + Light 2way","model":"CF_7","cost":2670,"sell":3289.71},
+        {"type":"Camera","brand":"IP — Core Fix","product":"5MP IP Bullet Verifocal 30m IR, Mic + Light","model":"CF_8","cost":4550,"sell":5606.06},
+        {"type":"Camera","brand":"IP — Core Fix","product":"8MP IP Dome, 3.6mm, 30m IR, Mic + Light","model":"CF_9","cost":3280,"sell":4041.29},
+        {"type":"Camera","brand":"IP — Core Fix","product":"8MP IP Turret, 3.6mm, 30m IR, Mic + Light","model":"CF_10","cost":3390,"sell":4176.82},
+        // IP Core Fix - DVR
+        {"type":"DVR","brand":"IP — Core Fix","product":"10CH NVR, TRUE 4K Output, 80 Mbps, 1 SATA","model":"CF_NVR_12","cost":3200,"sell":6800},
+        {"type":"DVR","brand":"IP — Core Fix","product":"16CH NVR, TRUE 4K Output, 144 Mbps (72 Mbps AI), 2 SATA","model":"CF_NVR_13","cost":3900,"sell":8287.5},
+        {"type":"DVR","brand":"IP — Core Fix","product":"32CH NVR, TRUE 4K Output, 160 Mbps, 2 SATA, AI","model":"CF_NVR_14","cost":8150,"sell":10403.47},
+        {"type":"DVR","brand":"IP — Core Fix","product":"64CH NVR, TRUE 4K Output, 320+ Mbps, AI, 8 SATA","model":"CF_NVR_15","cost":43843,"sell":60832.16},
+        // IP Core Fix - Cable
+        {"type":"Cable","brand":"IP — Core Fix","product":"Cat6 Cable Pure Copper","model":"Cat6","cost":29.37,"sell":41.25},
+        // IP Core Fix - Power Supply
+        {"type":"Power Supply","brand":"IP — Core Fix","product":"4+2 PoE, 100Mbps, 65W, AI Watchdog","model":"PS_1","cost":992.35,"sell":1393.75},
+        {"type":"Power Supply","brand":"IP — Core Fix","product":"8+2 PoE, 100Mbps, 120W, AI Watchdog","model":"PS_2","cost":1165.9,"sell":1637.5},
+        {"type":"Power Supply","brand":"IP — Core Fix","product":"8+2 PoE, Giga-UP, 96W, AI Watchdog","model":"PS_3","cost":2091.5,"sell":2937.5},
+        {"type":"Power Supply","brand":"IP — Core Fix","product":"16 PoE + 2 Uplink + 1 SFP, Gigabit, 300W, AI Watchdog","model":"PS_4","cost":6276.28,"sell":8815},
+        {"type":"Power Supply","brand":"IP — Core Fix","product":"8 PoE + 2 SFP, Gigabit, 120W","model":"PS_5","cost":2823.08,"sell":3965},
+        {"type":"Power Supply","brand":"IP — Core Fix","product":"16 PoE + 2 SFP, Gigabit, 200W","model":"PS_6","cost":8564.47,"sell":12028.75},
+        // IP Core Fix - Monitor
+        {"type":"Monitor","brand":"IP — Core Fix","product":"19inch Monitor","model":"Monitor","cost":1900,"sell":2750},
+        // IP Core Fix - HDD
+        {"type":"HDD","brand":"IP — Core Fix","product":"500GB HDD","model":"500GB","cost":1747.96,"sell":2455},
+        {"type":"HDD","brand":"IP — Core Fix","product":"2TB Seagate","model":"2TB Seagate","cost":10200,"sell":11730}
+    ];
+    
+    function init() {
+        allProducts = productsData;
+        updateBrandFilter();
+    }
+    
+    function updateBrandFilter() {
+        const type = document.getElementById("typeFilter").value;
+        const brandFilter = document.getElementById("brandFilter");
+        
+        let brands = new Set();
+        if(type) {
+            allProducts.filter(p => p.type === type).forEach(p => brands.add(p.brand));
+        } else {
+            allProducts.forEach(p => brands.add(p.brand));
+        }
+        
+        brandFilter.innerHTML = '<option value="">— All Brands —</option>';
+        [...brands].sort().forEach(b => {
+            brandFilter.innerHTML += `<option value="${b}">${b}</option>`;
+        });
+        
+        updateProducts();
+    }
+    
+    function updateProducts() {
+        const type = document.getElementById("typeFilter").value;
+        const brand = document.getElementById("brandFilter").value;
+        
+        let filtered = allProducts.filter(p => (!type || p.type === type) && (!brand || p.brand === brand));
+        
+        let html = '';
+        if(filtered.length === 0) {
+            html = '<div class="empty">No products in this selection</div>';
+        } else {
+            filtered.forEach((p, i) => {
+                html += `
+                    <div class="item-row">
+                        <div>
+                            <div class="item-name">${p.product}</div>
+                            <div class="item-price">Rs ${p.sell.toLocaleString('en-IN', {maximumFractionDigits: 0})}</div>
+                        </div>
+                        <input type="number" min="1" placeholder="Qty" id="qty_${i}" />
+                        <button class="btn-add" onclick="addItem(${i})">Add</button>
+                    </div>
+                `;
+            });
+        }
+        document.getElementById("productList").innerHTML = html;
+    }
+    
+    function addItem(i) {
+        const filtered = allProducts.filter(p => 
+            (!document.getElementById("typeFilter").value || p.type === document.getElementById("typeFilter").value) &&
+            (!document.getElementById("brandFilter").value || p.brand === document.getElementById("brandFilter").value)
+        );
+        const qty = parseInt(document.getElementById(`qty_${i}`).value) || 1;
+        if(qty <= 0) return;
+        
+        const p = filtered[i];
+        quoteItems.push({...p, qty: qty});
+        document.getElementById(`qty_${i}`).value = '';
+        updateQuote();
+    }
+    
+    function removeItem(i) {
+        quoteItems.splice(i, 1);
+        updateQuote();
+    }
+    
+    function updateQuote() {
+        let html = '';
+        if(quoteItems.length === 0) {
+            html = '<div class="empty">No items yet</div>';
+        } else {
+            quoteItems.forEach((item, i) => {
+                const total = (item.sell * item.qty).toLocaleString('en-IN', {maximumFractionDigits: 0});
+                html += `
+                    <div class="quote-item">
+                        <div style="font-size:11px;">${item.product}<br><span style="color:#999;font-size:10px;">x${item.qty} @ Rs ${item.sell.toLocaleString('en-IN',{maximumFractionDigits:0})}</span></div>
+                        <div style="text-align:right; font-weight:bold;">Rs</div>
+                        <div style="text-align:right; font-weight:bold;">${total}</div>
+                        <button class="item-del" onclick="removeItem(${i})">✕</button>
+                    </div>
+                `;
+            });
+        }
+        document.getElementById("quoteBox").innerHTML = html;
+        updateTotals();
+        updateMessage();
+    }
+    
+    function updateTotals() {
+        const sub = quoteItems.reduce((s, item) => s + (item.sell * item.qty), 0);
+        const gst = sub * GST_RATE;
+        const total = sub + gst;
+        
+        document.getElementById("subTotal").innerText = "Rs " + sub.toLocaleString('en-IN', {maximumFractionDigits: 0});
+        document.getElementById("gstAmount").innerText = "Rs " + gst.toLocaleString('en-IN', {maximumFractionDigits: 0});
+        document.getElementById("grandTotal").innerText = "Rs " + total.toLocaleString('en-IN', {maximumFractionDigits: 0});
+    }
+    
+    function updateMessage() {
+        const custName = document.getElementById("custName").value || "-";
+        const custSite = document.getElementById("custSite").value || "-";
+        const custDate = document.getElementById("custDate").value || new Date().toLocaleDateString('en-IN');
+        
+        const sub = quoteItems.reduce((s, item) => s + (item.sell * item.qty), 0);
+        const gst = sub * GST_RATE;
+        const total = sub + gst;
+        
+        let msg = "*ALLIANCE CCTV - Quotation*\n";
+        msg += `Customer: ${custName}\nSite: ${custSite}\nDate: ${custDate}\n`;
+        msg += "---------------------------\n";
+        
+        quoteItems.forEach(item => {
+            const lineTotal = (item.sell * item.qty).toLocaleString('en-IN', {maximumFractionDigits: 0});
+            msg += `- ${item.product} x${item.qty} = Rs ${lineTotal}\n`;
+        });
+        
+        msg += "---------------------------\n";
+        msg += `Sub-Total: Rs ${sub.toLocaleString('en-IN', {maximumFractionDigits: 0})}\n`;
+        msg += `GST 18%: Rs ${gst.toLocaleString('en-IN', {maximumFractionDigits: 0})}\n`;
+        msg += `*Grand Total: Rs ${total.toLocaleString('en-IN', {maximumFractionDigits: 0})}*\n`;
+        msg += "---------------------------\n";
+        msg += "Payment: 50% advance, 50% on completion\n";
+        msg += "Warranty: 1 year (Camera / DVR / HDD)\n";
+        msg += "Quote valid 15 days\nUPI: megnet12@idfcbank\nPh: 7002403505";
+        
+        document.getElementById("messageBox").innerText = msg;
+    }
+    
+    function copyMessage() {
+        const text = document.getElementById("messageBox").innerText;
+        if(!quoteItems.length) { alert("Build a quote first"); return; }
+        
+        navigator.clipboard.writeText(text).then(() => {
+            alert("✓ Copied! Paste into WhatsApp.");
+        }).catch(() => {
+            const ta = document.createElement("textarea");
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand("copy");
+            document.body.removeChild(ta);
+            alert("✓ Copied! Paste into WhatsApp.");
+        });
+    }
+    
+    function clearQuote() {
+        if(confirm("Clear all items?")) {
+            quoteItems = [];
+            updateQuote();
+        }
+    }
+    
+    window.addEventListener("load", init);
+    document.getElementById("custName").addEventListener("change", updateMessage);
+    document.getElementById("custSite").addEventListener("change", updateMessage);
+    document.getElementById("custDate").addEventListener("change", updateMessage);
+</script>
+
+</body>
+</html>
